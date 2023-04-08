@@ -88,3 +88,5 @@ lint/tmp/
 /app/creds/
 
 /app/prod/release/
+
+gradle.properties

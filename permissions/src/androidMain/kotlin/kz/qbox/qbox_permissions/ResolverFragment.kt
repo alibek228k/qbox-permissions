@@ -4,7 +4,10 @@ import android.content.pm.PackageManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.*
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 
 internal class ResolverFragment : Fragment() {
@@ -16,7 +19,6 @@ internal class ResolverFragment : Fragment() {
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissionResults ->
-            println("Result is $permissionResults")
 
             val permissionCallback = permissionCallbackMap ?: return@registerForActivityResult
             permissionCallbackMap = null

@@ -2,6 +2,15 @@ plugins {
     kotlin("multiplatform")
     kotlin("native.cocoapods")
     id("com.android.library")
+    id("convention.publication")
+}
+
+group = "io.github.alibek228k"
+version = "1.0.0"
+
+repositories{
+    google()
+    mavenCentral()
 }
 
 kotlin {
@@ -63,9 +72,17 @@ kotlin {
 
 android {
     namespace = "kz.qbox.qbox_permissions"
+    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     compileSdk = 33
     defaultConfig {
         minSdk = 24
         targetSdk = 33
+    }
+
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
+        }
     }
 }

@@ -1,12 +1,12 @@
 plugins {
-    kotlin("multiplatform")
+    id("com.android.library").version("7.4.1").apply(true)
     kotlin("native.cocoapods")
-    id("com.android.library")
+    kotlin("multiplatform")
     id("convention.publication")
 }
 
 group = "io.github.alibek228k"
-version = "1.0.0"
+version = "1.1.2"
 
 repositories{
     google()
@@ -15,6 +15,7 @@ repositories{
 
 kotlin {
     android {
+        publishLibraryVariants("release", "debug")
         compilations.all {
             kotlinOptions {
                 jvmTarget = "1.8"

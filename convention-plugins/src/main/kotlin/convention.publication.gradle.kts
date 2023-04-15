@@ -12,7 +12,7 @@ plugins {
 ext["signing.keyId"] = null
 ext["signing.password"] = null
 ext["signing.secretKeyRingFile"] = null
-ext["ossrhPassword"] = null
+ext["ossrhUsername"] = null
 ext["ossrhPassword"] = null
 
 val publishGroupId: String by project
@@ -26,55 +26,65 @@ val licenseUrl: String by project
 val developerId: String by project
 val developerName: String by project
 val developerEmail: String by project
-val properties = rootProject.file("local.properties").reader().use {
-    Properties().apply {
-        load(it)
+val secretPropsFile = project.rootProject.file("local.properties")
+if (secretPropsFile.exists()) {
+    secretPropsFile.reader().use {
+        Properties().apply {
+            load(it)
+        }
+    }.onEach { (name, value) ->
+        ext[name.toString()] = value
     }
-}.onEach { (name, value) ->
-    ext[name.toString()] = value
+} else {
+    ext["signing.keyId"] = System.getenv("SIGNING_KEY_ID")
+    ext["signing.password"] = System.getenv("SIGNING_PASSWORD")
+    ext["signing.secretKeyRingFile"] = System.getenv("SIGNING_SECRET_KEY_RING_FILE")
+    ext["ossrhUsername"] = System.getenv("OSSRH_USERNAME")
+    ext["ossrhPassword"] = System.getenv("OSSRH_PASSWORD")
 }
 
-afterEvaluate {
-    publishing {
-        repositories {
-            maven {
-                name = "sonatype"
-                setUrl("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-                credentials {
-                    username = properties["ossrhUsername"].toString()
-                    password = properties["ossrhPassword"].toString()
-                }
+val javadocJar by tasks.registering(Jar::class) {
+    archiveClassifier.set("javadoc")
+}
+
+fun getExtraString(name: String) = ext[name]?.toString()
+
+publishing {
+    repositories {
+        maven {
+            name = "sonatype"
+            setUrl("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+            credentials {
+                username = getExtraString("ossrhUsername")
+                password = getExtraString("ossrhPassword")
             }
         }
-        publications {
-            register<MavenPublication>("release") {
-                groupId = publishGroupId
-                artifactId = publishArtifactId
-                version = "1.0.0"
-                from(components.getByName("release"))
+    }
+    publications.withType<MavenPublication> {
 
-                pom {
-                    name.set(pomName)
-                    description.set(pomDescription)
-                    url.set(siteUrl)
+        artifact(javadocJar.get())
+        artifactId = publishArtifactId
 
-                    licenses {
-                        license {
-                            name.set(licenseName)
-                            url.set(licenseUrl)
-                        }
-                    }
-                    developers {
-                        developer {
-                            id.set(developerId)
-                            name.set(developerName)
-                            email.set(developerEmail)
-                        }
-                    }
-                    scm {
-                        url.set(gitUrl)
-                    }
+        pom {
+            name.set(pomName)
+            description.set(pomDescription)
+            url.set(siteUrl)
+
+            licenses {
+                license {
+                    name.set(licenseName)
+                    url.set(licenseUrl)
                 }
+            }
+            developers {
+                developer {
+                    id.set(developerId)
+                    name.set(developerName)
+                    email.set(developerEmail)
+                }
+            }
+            scm {
+                url.set(gitUrl)
             }
         }
     }
